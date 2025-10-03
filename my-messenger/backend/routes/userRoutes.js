@@ -1,5 +1,5 @@
 import express from 'express';
-import { createUser, findUserByGmail } from '../utils/userStore.js';
+import { createUser, findUserByGmail, upsertUser, readUsers } from '../utils/userStore.js';
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.get('/:id', (req, res) => {
   res.json({ message: `Get user with ID ${id}` });
 });
 
-// Signup: create user with hashed password
+// Signup: create user with hashed password and 6-digit code
 router.post('/signup', (req, res, next) => {
   try {
     const { gmail, password } = req.body;
@@ -30,7 +30,7 @@ router.post('/signup', (req, res, next) => {
     }
     const passwordHash = password;
     const newUser = createUser({ gmail, passwordHash });
-    res.status(201).json({ id: newUser.id, gmail: newUser.gmail });
+    res.status(201).json({ id: newUser.id, gmail: newUser.gmail, code: newUser.code });
   } catch (err) {
     if (err.status === 409) {
       res.status(409).json({ message: 'User already exists' });
@@ -56,7 +56,18 @@ router.post('/login', (req, res) => {
     res.status(401).json({ message: 'Invalid credentials' });
     return;
   }
-  res.status(200).json({ message: 'Login successful', gmail });
+  if (!user.code) {
+    // Generate unique code considering all users
+    const allUsers = readUsers();
+    const existingCodes = new Set(allUsers.filter(u => u.code).map(u => u.code));
+    let code;
+    do {
+      code = Math.floor(100000 + Math.random() * 900000).toString();
+    } while (existingCodes.has(code));
+    user.code = code;
+    upsertUser(user);
+  }
+  res.status(200).json({ message: 'Login successful', id: user.id, gmail, code: user.code });
 });
 
 export default router;

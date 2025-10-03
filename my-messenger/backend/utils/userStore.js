@@ -38,6 +38,19 @@ export function findUserByGmail(gmail) {
   return users.find((u) => u.gmail === gmail) || null;
 }
 
+export function upsertUser(updatedUser) {
+  const users = readUsers();
+  const idx = users.findIndex(u => u.id === updatedUser.id);
+  if (idx !== -1) {
+    users[idx] = updatedUser;
+    writeUsers(users);
+    return updatedUser;
+  }
+  users.push(updatedUser);
+  writeUsers(users);
+  return updatedUser;
+}
+
 export function createUser({ gmail, passwordHash }) {
   const users = readUsers();
   if (users.some((u) => u.gmail === gmail)) {
@@ -45,7 +58,14 @@ export function createUser({ gmail, passwordHash }) {
     error.status = 409;
     throw error;
   }
-  const newUser = { id: Date.now().toString(), gmail, passwordHash };
+  // Generate a unique 6-digit code
+  let code;
+  const existingCodes = new Set(users.map(u => u.code));
+  do {
+    code = Math.floor(100000 + Math.random() * 900000).toString();
+  } while (existingCodes.has(code));
+
+  const newUser = { id: Date.now().toString(), gmail, passwordHash, code };
   users.push(newUser);
   writeUsers(users);
   return newUser;

@@ -1,0 +1,32 @@
+[
+  {
+    "ownerCode": "486553",
+    "peerCode": "782274",
+    "createdAt": 1759418988289
+  },
+  {
+    "ownerCode": "776079",
+    "peerCode": "486553",
+    "createdAt": 1759419052535
+  },
+  {
+    "ownerCode": "794292",
+    "peerCode": "486553",
+    "createdAt": 1759419275351
+  },
+  {
+    "ownerCode": "794292",
+    "peerCode": "776079",
+    "createdAt": 1759419442782
+  },
+  {
+    "ownerCode": "782274",
+    "peerCode": "fds",
+    "createdAt": 1759499894406
+  },
+  {
+    "ownerCode": "794292",
+    "peerCode": "782274",
+    "createdAt": 1759501091799
+  }
+]
