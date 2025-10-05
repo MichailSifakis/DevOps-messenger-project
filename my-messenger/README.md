@@ -1,16 +1,32 @@
-# React + Vite
+## My Messenger – Quick Start
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Run the app locally (React + Vite frontend, Node/Express + Socket.IO backend).
 
-Currently, two official plugins are available:
+### Prereqs
+- Node 18+ and npm 9+
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Install
+```bash
+cd "DevOps messenger project/my-messenger"
+npm install            # root deps (frontend/tooling)
+cd backend && npm install   # installs express, socket.io, jsonwebtoken, cors, dotenv
+```
 
-## React Compiler
+### Env (backend)
+Create `backend/.env`:
+```env
+JWT_SECRET=superSecretKey
+PORT=5000 #or any other port you prefer, also update it in `backend/server.js`
+```
+Note: CORS is set to `http://localhost:5173` in `backend/server.js`.
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Run
+- Backend: `cd backend && npm start` → http://localhost:5000
+- Frontend: `cd .. && npm run dev` → http://localhost:5173
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+### Troubleshooting
+- Ports: backend 5000, frontend 5173 (change `PORT` or `--port`)
+- CORS: if ports change, update origin in `backend/server.js`
+- 401: include `Authorization: Bearer <token>` from signup/login
