@@ -1,5 +1,6 @@
 import express from 'express';
 import { createUser, findUserByGmail, upsertUser, readUsers } from '../utils/userStore.js';
+import { generateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -30,7 +31,8 @@ router.post('/signup', (req, res, next) => {
     }
     const passwordHash = password;
     const newUser = createUser({ gmail, passwordHash });
-    res.status(201).json({ id: newUser.id, gmail: newUser.gmail, code: newUser.code });
+    const token = generateToken(newUser.id, newUser.code);
+    res.status(201).json({ id: newUser.id, gmail: newUser.gmail, code: newUser.code, token });
   } catch (err) {
     if (err.status === 409) {
       res.status(409).json({ message: 'User already exists' });
@@ -67,7 +69,8 @@ router.post('/login', (req, res) => {
     user.code = code;
     upsertUser(user);
   }
-  res.status(200).json({ message: 'Login successful', id: user.id, gmail, code: user.code });
+  const token = generateToken(user.id, user.code);
+  res.status(200).json({ message: 'Login successful', id: user.id, gmail, code: user.code, token });
 });
 
 export default router;

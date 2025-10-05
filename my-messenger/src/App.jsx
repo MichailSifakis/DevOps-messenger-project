@@ -1,23 +1,69 @@
+// App.jsx - Main client app
+// - Handles auth (signup/login), JWT storage, and session restore
+// - Manages contacts, conversations, and real-time messages
+// - Connects to Socket.IO and REST endpoints
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 import CryptoJS from 'crypto-js';
 import { io } from 'socket.io-client';
 
 function App() {
+  // Auth and session state
   const [gmail, setGmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState('signin');
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+
+  // Messaging state
   const [toCode, setToCode] = useState('');
   const [thread, setThread] = useState([]);
   const [draft, setDraft] = useState('');
   const socketRef = useRef(null);
-  const [conversations, setConversations] = useState([]);
+  const [conversations, setConversations] = useState([]); // recent chats (code + last text)
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState([]); // saved peers by code
   const [newContactCode, setNewContactCode] = useState('');
 
+  // On load, restore user + token from localStorage (no server call)
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedToken && storedUser && !user) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setToken(storedToken);
+      } catch (e) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        setToken(null);
+      }
+    } else if (!storedToken && !storedUser) {
+      // Clear state if no data in localStorage
+      setUser(null);
+      setToken(null);
+    }
+  }, []);
+
+  // Sync token state if localStorage changes in another tab
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedToken = localStorage.getItem('token');
+      if (!storedToken && token) {
+        setToken(null);
+        setUser(null);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [token]);
+
+  // Signup/Login submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -38,7 +84,11 @@ function App() {
 
       const data = await response.json();
       if (response.ok) {
-        setUser({ gmail: data.gmail, code: data.code, id: data.id });
+        const userData = { gmail: data.gmail, code: data.code, id: data.id };
+        setUser(userData);
+        setToken(data.token);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(userData));
       } else {
         alert(data?.message || (mode === 'signup' ? 'Sign up failed!' : 'Login failed!'));
         console.error(data);
@@ -49,7 +99,7 @@ function App() {
     }
   };
 
-  // Socket setup (join my code room and listen for messages)
+  // Socket setup: join my code room and append incoming messages
   useEffect(() => {
     if (!user || !user.code) return;
     const socket = io('http://localhost:5000');
@@ -72,10 +122,21 @@ function App() {
     };
   }, [user && user.code, toCode]);
 
+  // Load full message thread with selected peer
   const refreshThread = async (peerCode) => {
-    if (!peerCode) return;
+    if (!peerCode || !token) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/messages/thread?a=${user.code}&b=${peerCode}`);
+      const res = await fetch(`http://localhost:5000/api/messages/thread?a=${user.code}&b=${peerCode}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401) {
+        // Token expired, logout
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
       const data = await res.json();
       setThread(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -83,9 +144,20 @@ function App() {
     }
   };
 
+  // Load recent conversations for the sidebar
   const refreshConversations = async () => {
+    if (!token) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/messages/conversations?code=${user.code}`);
+      const res = await fetch(`http://localhost:5000/api/messages/conversations?code=${user.code}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
       const data = await res.json();
       setConversations(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -93,9 +165,20 @@ function App() {
     }
   };
 
+  // Load saved contacts
   const refreshContacts = async () => {
+    if (!token) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/contacts?ownerCode=${user.code}`);
+      const res = await fetch(`http://localhost:5000/api/contacts?ownerCode=${user.code}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
       const data = await res.json();
       setContacts(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -103,15 +186,34 @@ function App() {
     }
   };
 
+  // Save a new contact by code
   const addContact = async () => {
     const code = (newContactCode || '').trim();
     if (!code) return;
+    
+    const currentToken = localStorage.getItem('token');
+    if (!currentToken) {
+      setUser(null);
+      setToken(null);
+      return;
+    }
+    
     try {
       const res = await fetch('http://localhost:5000/api/contacts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentToken}`
+        },
         body: JSON.stringify({ ownerCode: user.code, peerCode: code })
       });
+      if (res.status === 401) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
       if (res.ok) {
         setNewContactCode('');
         refreshContacts();
@@ -121,13 +223,31 @@ function App() {
     }
   };
 
+  // Remove a saved contact by code
   const deleteContact = async (peerCode) => {
+    const currentToken = localStorage.getItem('token');
+    if (!currentToken) {
+      setUser(null);
+      setToken(null);
+      return;
+    }
+    
     try {
       const res = await fetch('http://localhost:5000/api/contacts', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentToken}`
+        },
         body: JSON.stringify({ ownerCode: user.code, peerCode })
       });
+      if (res.status === 401) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
       if (res.ok) {
         refreshContacts();
       }
@@ -136,18 +256,39 @@ function App() {
     }
   };
 
+  // Remove a non-contact conversation from local state
   const removeConversationLocal = (peerCode) => {
     setConversations(prev => prev.filter(c => c.peerCode !== peerCode));
   };
 
+  // Send a message to current peer; uses token from localStorage at call time
   const sendMessage = async () => {
     if (!draft.trim() || !toCode) return;
+    
+    // Check if token still exists in localStorage
+    const currentToken = localStorage.getItem('token');
+    if (!currentToken) {
+      setUser(null);
+      setToken(null);
+      return;
+    }
+    
     try {
       const res = await fetch('http://localhost:5000/api/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentToken}`
+        },
         body: JSON.stringify({ fromCode: user.code, toCode, text: draft.trim() }),
       });
+      if (res.status === 401) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
       const msg = await res.json();
       if (res.ok) {
         setDraft('');
@@ -160,6 +301,7 @@ function App() {
     }
   };
 
+  // Unified sidebar list: contacts overlaid with conversations (no duplicates)
   const combinedList = useMemo(() => {
     const map = new Map();
     // Seed with contacts
@@ -241,7 +383,7 @@ function App() {
                 />
               )}
               <button className="action" onClick={() => setIsSearching((v) => !v)}>{isSearching ? 'Close' : 'Search'}</button>
-              <button className="action" onClick={() => setUser(null)}>Logout</button>
+              <button className="action" onClick={() => { setUser(null); setToken(null); localStorage.removeItem('token'); localStorage.removeItem('user'); }}>Logout</button>
             </div>
           </div>
           <div className="chat-messages">

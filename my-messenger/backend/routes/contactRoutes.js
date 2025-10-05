@@ -1,10 +1,11 @@
 import express from 'express';
 import { addContact, listContacts, removeContact } from '../utils/contactStore.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Add contact by code
-router.post('/', (req, res) => {
+router.post('/', protect, (req, res) => {
   const { ownerCode, peerCode } = req.body;
   if (!ownerCode || !peerCode) {
     res.status(400).json({ message: 'ownerCode and peerCode are required' });
@@ -15,7 +16,7 @@ router.post('/', (req, res) => {
 });
 
 // List contacts
-router.get('/', (req, res) => {
+router.get('/', protect, (req, res) => {
   const { ownerCode } = req.query;
   if (!ownerCode) {
     res.status(400).json({ message: 'ownerCode is required' });
@@ -27,7 +28,7 @@ router.get('/', (req, res) => {
 export default router;
 
 // Delete a contact
-router.delete('/', (req, res) => {
+router.delete('/', protect, (req, res) => {
   const { ownerCode, peerCode } = req.body || {};
   if (!ownerCode || !peerCode) {
     res.status(400).json({ message: 'ownerCode and peerCode are required' });

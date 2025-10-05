@@ -1,12 +1,12 @@
 import express from 'express';
-import { findUserByGmail } from '../utils/userStore.js';
 import { appendMessage, getThreadBetweenCodes, readMessages } from '../utils/messageStore.js';
+import { protect } from '../middleware/authMiddleware.js';
 import { getIO } from '../socket.js';
 
 const router = express.Router();
 
 // Send a message { fromCode, toCode, text }
-router.post('/', (req, res) => {
+router.post('/', protect, (req, res) => {
   const { fromCode, toCode, text } = req.body;
   if (!fromCode || !toCode || !text) {
     res.status(400).json({ message: 'fromCode, toCode and text are required' });
@@ -23,7 +23,7 @@ router.post('/', (req, res) => {
 });
 
 // Get thread messages between two codes
-router.get('/thread', (req, res) => {
+router.get('/thread', protect, (req, res) => {
   const { a, b } = req.query;
   if (!a || !b) {
     res.status(400).json({ message: 'query params a and b (codes) are required' });
@@ -34,7 +34,7 @@ router.get('/thread', (req, res) => {
 });
 
 // Get recent conversations for a given code
-router.get('/conversations', (req, res) => {
+router.get('/conversations', protect, (req, res) => {
   const { code } = req.query;
   if (!code) {
     res.status(400).json({ message: 'query param code is required' });
