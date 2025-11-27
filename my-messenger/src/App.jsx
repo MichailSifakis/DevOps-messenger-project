@@ -36,6 +36,7 @@ function App() {
         const userData = JSON.parse(storedUser);
         setUser(userData);
         setToken(storedToken);
+      // eslint-disable-next-line no-unused-vars
       } catch (e) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -387,8 +388,8 @@ function App() {
             </div>
           </div>
           <div className="chat-messages">
-            {(searchQuery ? thread.filter(m => m.text.toLowerCase().includes(searchQuery.toLowerCase())) : thread).map(m => (
-              <div key={m.id} className={`message ${m.fromCode === user.code ? 'outbound' : 'inbound'}`}>
+            {(searchQuery ? thread.filter(m => m.text.toLowerCase().includes(searchQuery.toLowerCase())) : thread).map((m, index) => (
+              <div key={m.id || `msg-${index}`} className={`message ${m.fromCode === user.code ? 'outbound' : 'inbound'}`}>
                 <div className="bubble">{m.text}</div>
               </div>
             ))}

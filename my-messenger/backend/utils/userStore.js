@@ -1,74 +1,80 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { User } from '../models/User.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const dataDir = path.join(__dirname, '../data');
-const usersFilePath = path.join(dataDir, 'users.json');
-
-function ensureDataFileExists() {
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  if (!fs.existsSync(usersFilePath)) {
-    fs.writeFileSync(usersFilePath, JSON.stringify([] , null, 2), 'utf-8');
-  }
-}
-
-export function readUsers() {
-  ensureDataFileExists();
-  const fileContent = fs.readFileSync(usersFilePath, 'utf-8');
+export async function readUsers() {
   try {
-    const users = JSON.parse(fileContent);
-    return Array.isArray(users) ? users : [];
-  } catch {
+    return await User.find({});
+  } catch (error) {
+    console.error('Error reading users:', error);
     return [];
   }
 }
 
-export function writeUsers(users) {
-  ensureDataFileExists();
-  fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
-}
-
-export function findUserByGmail(gmail) {
-  const users = readUsers();
-  return users.find((u) => u.gmail === gmail) || null;
-}
-
-export function upsertUser(updatedUser) {
-  const users = readUsers();
-  const idx = users.findIndex(u => u.id === updatedUser.id);
-  if (idx !== -1) {
-    users[idx] = updatedUser;
-    writeUsers(users);
-    return updatedUser;
+export async function findUserByGmail(gmail) {
+  try {
+    return await User.findOne({ gmail: gmail.toLowerCase() });
+  } catch (error) {
+    console.error('Error finding user by gmail:', error);
+    return null;
   }
-  users.push(updatedUser);
-  writeUsers(users);
-  return updatedUser;
 }
 
-export function createUser({ gmail, passwordHash }) {
-  const users = readUsers();
-  if (users.some((u) => u.gmail === gmail)) {
+export async function findUserByCode(code) {
+  try {
+    return await User.findOne({ code });
+  } catch (error) {
+    console.error('Error finding user by code:', error);
+    return null;
+  }
+}
+
+export async function upsertUser(updatedUser) {
+  try {
+    const user = await User.findById(updatedUser.id);
+    if (!user) {
+      const newUser = new User(updatedUser);
+      await newUser.save();
+      return newUser;
+    }
+    
+    Object.assign(user, updatedUser);
+    await user.save();
+    return user;
+  } catch (error) {
+    console.error('Error upserting user:', error);
+    throw error;
+  }
+}
+
+export async function createUser({ gmail, passwordHash }) {
+  // Check if user exists
+  const existing = await findUserByGmail(gmail);
+  if (existing) {
     const error = new Error('User already exists');
     error.status = 409;
     throw error;
   }
-  // Generate a unique 6-digit code
-  let code;
-  const existingCodes = new Set(users.map(u => u.code));
-  do {
-    code = Math.floor(100000 + Math.random() * 900000).toString();
-  } while (existingCodes.has(code));
 
-  const newUser = { id: Date.now().toString(), gmail, passwordHash, code };
-  users.push(newUser);
-  writeUsers(users);
-  return newUser;
+  // Generate unique 6-digit code
+  let code;
+  let isUnique = false;
+  while (!isUnique) {
+    code = Math.floor(100000 + Math.random() * 900000).toString();
+    const existingCode = await User.findOne({ code });
+    if (!existingCode) isUnique = true;
+  }
+
+  const newUser = new User({
+    gmail: gmail.toLowerCase(),
+    passwordHash,
+    code
+  });
+
+  await newUser.save();
+  return {
+    id: newUser._id.toString(),
+    gmail: newUser.gmail,
+    code: newUser.code
+  };
 }
 
 

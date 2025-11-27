@@ -1,28 +1,33 @@
-// JWT auth middleware
-// - protect: verifies Bearer token and attaches decoded payload to req.user
-// - generateToken: signs user id + code with expiry
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'superSecretKey';
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
-export const protect = (req, res, next) => {
+export function generateToken(userId, code) {
+  return jwt.sign(
+    { 
+      id: userId, 
+      code: code 
+    },
+    JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+}
+
+export function protect(req, res, next) {
   const authHeader = req.headers.authorization;
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401);
-    throw new Error('Not authorized, no token');
+    return res.status(401).json({ message: 'No token provided' });
   }
 
-  const token = authHeader.substring(7);
+  const token = authHeader.split(' ')[1];
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
+  // eslint-disable-next-line no-unused-vars
   } catch (error) {
-    res.status(401);
-    throw new Error('Not authorized, token failed');
+    return res.status(401).json({ message: 'Invalid token' });
   }
-};
-
-export const generateToken = (userId, code) => {
-  return jwt.sign({ userId, code }, JWT_SECRET, { expiresIn: '1h' });
-};
+}

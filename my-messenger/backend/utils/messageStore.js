@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { Message } from '../models/Message.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,13 +18,18 @@ function ensureDataFileExists() {
   }
 }
 
-export function readMessages() {
-  ensureDataFileExists();
-  const fileContent = fs.readFileSync(messagesFilePath, 'utf-8');
+export async function readMessages() {
   try {
-    const messages = JSON.parse(fileContent);
-    return Array.isArray(messages) ? messages : [];
-  } catch {
+    const messages = await Message.find({});
+    return messages.map(m => ({
+      id: m._id.toString(),
+      fromCode: m.fromCode,
+      toCode: m.toCode,
+      text: m.text,
+      timestamp: m.timestamp
+    }));
+  } catch (error) {
+    console.error('Error reading messages:', error);
     return [];
   }
 }
@@ -33,19 +39,50 @@ export function writeMessages(messages) {
   fs.writeFileSync(messagesFilePath, JSON.stringify(messages, null, 2), 'utf-8');
 }
 
-export function appendMessage(message) {
-  const messages = readMessages();
-  messages.push(message);
-  writeMessages(messages);
-  return message;
+export async function appendMessage(message) {
+  try {
+    const newMessage = new Message({
+      fromCode: message.fromCode,
+      toCode: message.toCode,
+      text: message.text,
+      timestamp: message.timestamp || Date.now()
+    });
+    
+    await newMessage.save();
+    
+    return {
+      id: newMessage._id.toString(),
+      fromCode: newMessage.fromCode,
+      toCode: newMessage.toCode,
+      text: newMessage.text,
+      timestamp: newMessage.timestamp
+    };
+  } catch (error) {
+    console.error('Error appending message:', error);
+    throw error;
+  }
 }
 
-export function getThreadBetweenCodes(codeA, codeB) {
-  const messages = readMessages();
-  return messages.filter(m =>
-    (m.fromCode === codeA && m.toCode === codeB) ||
-    (m.fromCode === codeB && m.toCode === codeA)
-  ).sort((a,b) => a.timestamp - b.timestamp);
+export async function getThreadBetweenCodes(codeA, codeB) {
+  try {
+    const messages = await Message.find({
+      $or: [
+        { fromCode: codeA, toCode: codeB },
+        { fromCode: codeB, toCode: codeA }
+      ]
+    }).sort({ timestamp: 1 });
+
+    return messages.map(m => ({
+      id: m._id.toString(),
+      fromCode: m.fromCode,
+      toCode: m.toCode,
+      text: m.text,
+      timestamp: m.timestamp
+    }));
+  } catch (error) {
+    console.error('Error getting thread:', error);
+    return [];
+  }
 }
 
 

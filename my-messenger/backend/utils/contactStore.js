@@ -1,58 +1,65 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { Contact } from '../models/Contact.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export async function addContact(ownerCode, peerCode) {
+  try {
+    // Check if contact already exists
+    const existing = await Contact.findOne({ ownerCode, peerCode });
+    if (existing) {
+      return {
+        ownerCode: existing.ownerCode,
+        peerCode: existing.peerCode,
+        createdAt: existing.createdAt
+      };
+    }
 
-const dataDir = path.join(__dirname, '../data');
-const contactsFilePath = path.join(dataDir, 'contacts.json');
+    const contact = new Contact({ ownerCode, peerCode });
+    await contact.save();
 
-function ensureDataFileExists() {
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  if (!fs.existsSync(contactsFilePath)) {
-    fs.writeFileSync(contactsFilePath, JSON.stringify([] , null, 2), 'utf-8');
+    return {
+      ownerCode: contact.ownerCode,
+      peerCode: contact.peerCode,
+      createdAt: contact.createdAt
+    };
+  } catch (error) {
+    console.error('Error adding contact:', error);
+    throw error;
   }
 }
 
-export function readContacts() {
-  ensureDataFileExists();
-  const fileContent = fs.readFileSync(contactsFilePath, 'utf-8');
+export async function listContacts(ownerCode) {
   try {
-    const contacts = JSON.parse(fileContent);
-    return Array.isArray(contacts) ? contacts : [];
-  } catch {
+    const contacts = await Contact.find({ ownerCode });
+    return contacts.map(c => ({
+      ownerCode: c.ownerCode,
+      peerCode: c.peerCode,
+      createdAt: c.createdAt
+    }));
+  } catch (error) {
+    console.error('Error listing contacts:', error);
     return [];
   }
 }
 
-export function writeContacts(contacts) {
-  ensureDataFileExists();
-  fs.writeFileSync(contactsFilePath, JSON.stringify(contacts, null, 2), 'utf-8');
+export async function removeContact(ownerCode, peerCode) {
+  try {
+    const result = await Contact.deleteOne({ ownerCode, peerCode });
+    return { removed: result.deletedCount > 0 };
+  } catch (error) {
+    console.error('Error removing contact:', error);
+    return { removed: false };
+  }
 }
 
-export function listContacts(ownerCode) {
-  const contacts = readContacts();
-  return contacts.filter(c => c.ownerCode === ownerCode);
+export async function readContacts() {
+  try {
+    const contacts = await Contact.find({});
+    return contacts.map(c => ({
+      ownerCode: c.ownerCode,
+      peerCode: c.peerCode,
+      createdAt: c.createdAt
+    }));
+  } catch (error) {
+    console.error('Error reading contacts:', error);
+    return [];
+  }
 }
-
-export function addContact(ownerCode, peerCode) {
-  const contacts = readContacts();
-  const exists = contacts.some(c => c.ownerCode === ownerCode && c.peerCode === peerCode);
-  if (exists) return { ownerCode, peerCode };
-  const entry = { ownerCode, peerCode, createdAt: Date.now() };
-  contacts.push(entry);
-  writeContacts(contacts);
-  return entry;
-}
-
-export function removeContact(ownerCode, peerCode) {
-  const contacts = readContacts();
-  const filtered = contacts.filter(c => !(c.ownerCode === ownerCode && c.peerCode === peerCode));
-  writeContacts(filtered);
-  return { removed: contacts.length !== filtered.length };
-}
-
-

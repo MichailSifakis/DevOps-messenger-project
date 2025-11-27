@@ -25,7 +25,6 @@ Note: CORS is set to `http://localhost:5173` in `backend/server.js`.
 - Frontend: `cd .. && npm run dev` → http://localhost:5173
 
 
-
 ### Troubleshooting
 - Ports: backend 5000, frontend 5173 (change `PORT` or `--port`)
 - CORS: if ports change, update origin in `backend/server.js`
