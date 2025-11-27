@@ -52,10 +52,10 @@ router.get('/conversations', protect, async (req, res) => {
   try {
     const { code } = req.query;
     if (!code) {
-      res.status(400).json({ message: 'query param code is required' });
-      return;
+      return res.status(400).json({ message: 'query param code is required' });
     }
     
+    // Fetch ALL messages from MongoDB where user is involved
     const all = await readMessages();
     const mine = all.filter(m => m.fromCode === code || m.toCode === code);
     

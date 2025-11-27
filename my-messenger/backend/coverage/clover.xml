@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1764263640094" clover="3.2.0">
+  <project timestamp="1764263640094" name="All files">
+    <metrics statements="225" coveredstatements="158" conditionals="71" coveredconditionals="55" methods="37" coveredmethods="30" elements="333" coveredelements="243" complexity="0" loc="225" ncloc="225" packages="5" files="12" classes="12"/>
+    <package name="backend">
+      <metrics statements="3" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="1"/>
+      <file name="socket.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/socket.js">
+        <metrics statements="3" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="4" count="0" type="stmt"/>
+        <line num="8" count="11" type="stmt"/>
+      </file>
+    </package>
+    <package name="backend.middleware">
+      <metrics statements="14" coveredstatements="14" conditionals="8" coveredconditionals="8" methods="3" coveredmethods="3"/>
+      <file name="authMiddleware.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/middleware/authMiddleware.js">
+        <metrics statements="11" coveredstatements="11" conditionals="6" coveredconditionals="6" methods="2" coveredmethods="2"/>
+        <line num="3" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="6" count="30" type="stmt"/>
+        <line num="17" count="27" type="stmt"/>
+        <line num="19" count="27" type="cond" truecount="4" falsecount="0"/>
+        <line num="20" count="5" type="stmt"/>
+        <line num="23" count="22" type="stmt"/>
+        <line num="25" count="22" type="stmt"/>
+        <line num="26" count="22" type="stmt"/>
+        <line num="27" count="21" type="stmt"/>
+        <line num="28" count="21" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+      </file>
+      <file name="errorMiddleware.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/middleware/errorMiddleware.js">
+        <metrics statements="3" coveredstatements="3" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="3" count="3" type="stmt"/>
+      </file>
+    </package>
+    <package name="backend.models">
+      <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <file name="Contact.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/models/Contact.js">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="18" count="3" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+      </file>
+      <file name="Message.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/models/Message.js">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="3" count="3" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+        <line num="27" count="3" type="stmt"/>
+        <line num="29" count="3" type="stmt"/>
+      </file>
+      <file name="User.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/models/User.js">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="3" count="5" type="stmt"/>
+        <line num="25" count="5" type="stmt"/>
+      </file>
+    </package>
+    <package name="backend.routes">
+      <metrics statements="113" coveredstatements="82" conditionals="49" coveredconditionals="40" methods="13" coveredmethods="10"/>
+      <file name="contactRoutes.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/routes/contactRoutes.js">
+        <metrics statements="31" coveredstatements="19" conditionals="12" coveredconditionals="8" methods="3" coveredmethods="3"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="3" type="stmt"/>
+        <line num="10" count="3" type="stmt"/>
+        <line num="11" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="13" count="0" type="stmt"/>
+        <line num="16" count="3" type="stmt"/>
+        <line num="17" count="3" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="44" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="45" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+      </file>
+      <file name="messageRoutes.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/routes/messageRoutes.js">
+        <metrics statements="43" coveredstatements="34" conditionals="21" coveredconditionals="18" methods="5" coveredmethods="4"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="12" type="stmt"/>
+        <line num="11" count="12" type="stmt"/>
+        <line num="12" count="12" type="cond" truecount="5" falsecount="0"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="17" count="11" type="stmt"/>
+        <line num="18" count="11" type="stmt"/>
+        <line num="19" count="11" type="stmt"/>
+        <line num="21" count="11" type="stmt"/>
+        <line num="22" count="11" type="cond" truecount="1" falsecount="1"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="26" count="11" type="stmt"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="52" count="2" type="stmt"/>
+        <line num="53" count="2" type="stmt"/>
+        <line num="54" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="60" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="64" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="65" count="2" type="stmt"/>
+        <line num="66" count="2" type="cond" truecount="3" falsecount="1"/>
+        <line num="67" count="2" type="stmt"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="76" count="1" type="stmt"/>
+        <line num="78" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+      </file>
+      <file name="userRoutes.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/routes/userRoutes.js">
+        <metrics statements="39" coveredstatements="29" conditionals="16" coveredconditionals="14" methods="5" coveredmethods="3"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="8" count="3" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="19" count="3" type="stmt"/>
+        <line num="20" count="29" type="stmt"/>
+        <line num="21" count="29" type="stmt"/>
+        <line num="22" count="29" type="cond" truecount="4" falsecount="0"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="26" count="28" type="stmt"/>
+        <line num="27" count="28" type="stmt"/>
+        <line num="28" count="27" type="stmt"/>
+        <line num="31" count="27" type="stmt"/>
+        <line num="38" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="46" count="3" type="stmt"/>
+        <line num="47" count="5" type="stmt"/>
+        <line num="48" count="5" type="stmt"/>
+        <line num="49" count="5" type="cond" truecount="4" falsecount="0"/>
+        <line num="50" count="2" type="stmt"/>
+        <line num="53" count="3" type="stmt"/>
+        <line num="54" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="58" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="63" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="64" count="0" type="stmt"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="68" count="0" type="stmt"/>
+        <line num="71" count="0" type="stmt"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="78" count="1" type="stmt"/>
+        <line num="86" count="0" type="stmt"/>
+        <line num="87" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="backend.utils">
+      <metrics statements="86" coveredstatements="51" conditionals="14" coveredconditionals="7" methods="18" coveredmethods="15"/>
+      <file name="contactStore.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/utils/contactStore.js">
+        <metrics statements="24" coveredstatements="16" conditionals="2" coveredconditionals="2" methods="6" coveredmethods="6"/>
+        <line num="4" count="12" type="stmt"/>
+        <line num="6" count="12" type="stmt"/>
+        <line num="7" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="15" count="11" type="stmt"/>
+        <line num="16" count="11" type="stmt"/>
+        <line num="18" count="11" type="stmt"/>
+        <line num="24" count="0" type="stmt"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="30" count="4" type="stmt"/>
+        <line num="31" count="4" type="stmt"/>
+        <line num="32" count="4" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="44" count="3" type="stmt"/>
+        <line num="45" count="3" type="stmt"/>
+        <line num="46" count="3" type="stmt"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="54" count="2" type="stmt"/>
+        <line num="55" count="2" type="stmt"/>
+        <line num="56" count="2" type="stmt"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="63" count="0" type="stmt"/>
+      </file>
+      <file name="messageStore.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/utils/messageStore.js">
+        <metrics statements="26" coveredstatements="16" conditionals="6" coveredconditionals="2" methods="7" coveredmethods="5"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="10" count="2" type="stmt"/>
+        <line num="13" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="16" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="23" count="3" type="stmt"/>
+        <line num="24" count="4" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="43" count="20" type="stmt"/>
+        <line num="44" count="20" type="stmt"/>
+        <line num="51" count="20" type="stmt"/>
+        <line num="53" count="19" type="stmt"/>
+        <line num="61" count="1" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="67" count="4" type="stmt"/>
+        <line num="68" count="4" type="stmt"/>
+        <line num="75" count="6" type="stmt"/>
+        <line num="83" count="0" type="stmt"/>
+        <line num="84" count="0" type="stmt"/>
+      </file>
+      <file name="userStore.js" path="/Users/michailsifakis/DevOps messenger project/my-messenger/backend/utils/userStore.js">
+        <metrics statements="36" coveredstatements="19" conditionals="6" coveredconditionals="3" methods="5" coveredmethods="4"/>
+        <line num="4" count="3" type="stmt"/>
+        <line num="5" count="3" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="8" count="0" type="stmt"/>
+        <line num="13" count="42" type="stmt"/>
+        <line num="14" count="42" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="33" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="34" count="0" type="stmt"/>
+        <line num="35" count="0" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="50" count="36" type="stmt"/>
+        <line num="51" count="36" type="cond" truecount="2" falsecount="0"/>
+        <line num="52" count="2" type="stmt"/>
+        <line num="53" count="2" type="stmt"/>
+        <line num="54" count="2" type="stmt"/>
+        <line num="59" count="34" type="stmt"/>
+        <line num="60" count="34" type="stmt"/>
+        <line num="61" count="34" type="stmt"/>
+        <line num="62" count="34" type="stmt"/>
+        <line num="63" count="34" type="cond" truecount="1" falsecount="1"/>
+        <line num="66" count="34" type="stmt"/>
+        <line num="72" count="34" type="stmt"/>
+        <line num="73" count="34" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>
