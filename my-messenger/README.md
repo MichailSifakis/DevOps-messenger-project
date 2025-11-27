@@ -7,7 +7,7 @@ Run the app locally (React + Vite frontend, Node/Express + Socket.IO backend).
 
 ### Install
 ```bash
-cd "DevOps messenger project/my-messenger"
+cd my-messenger/
 npm install            # root deps (frontend/tooling)
 cd backend && npm install   # installs express, socket.io, jsonwebtoken, cors, dotenv
 ```
