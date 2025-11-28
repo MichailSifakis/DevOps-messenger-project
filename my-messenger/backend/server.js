@@ -11,6 +11,7 @@ import errorHandler from './middleware/errorMiddleware.js';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { setIO } from './socket.js';
+import { metricsMiddleware, getMetrics } from './middleware/metrics.js';
 
 dotenv.config();
 
@@ -48,6 +49,8 @@ setIO(io);
 
 const PORT = process.env.PORT || 5000;
 
+app.use(metricsMiddleware);
+
 // Middleware
 app.use(cors({
   origin: [
@@ -62,6 +65,32 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/contacts', contactRoutes);
+
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    const dbState = mongoose.connection.readyState;
+    const dbStatus = dbState === 1 ? 'connected' : 'disconnected';
+    
+    res.status(200).json({
+      status: 'ok',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      memory: process.memoryUsage(),
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+});
+
+app.get('/metrics', (req, res) => {
+  res.json(getMetrics());
+});
 
 // Error handling middleware
 app.use(errorHandler);
