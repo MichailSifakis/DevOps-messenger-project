@@ -2,6 +2,7 @@ import express from 'express';
 import { appendMessage, getThreadBetweenCodes, readMessages } from '../utils/messageStore.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { getIO } from '../socket.js';
+import { Message } from '../models/Message.js';
 
 const router = express.Router();
 
@@ -44,6 +45,31 @@ router.get('/thread', protect, async (req, res) => {
   } catch (error) {
     console.error('Error getting thread:', error);
     res.status(500).json({ message: 'Error getting thread' });
+  }
+});
+
+// Delete entire thread between two users
+router.delete('/thread', protect, async (req, res) => {
+  try {
+    const { a, b } = req.query;
+    if (!a || !b) {
+      return res.status(400).json({ message: 'query params a and b (codes) are required' });
+    }
+    
+    const result = await Message.deleteMany({
+      $or: [
+        { fromCode: a, toCode: b },
+        { fromCode: b, toCode: a }
+      ]
+    });
+    
+    res.json({ 
+      deleted: result.deletedCount,
+      message: `Deleted ${result.deletedCount} messages` 
+    });
+  } catch (error) {
+    console.error('Error deleting thread:', error);
+    res.status(500).json({ message: 'Error deleting thread' });
   }
 });
 

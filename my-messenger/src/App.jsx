@@ -71,8 +71,8 @@ function App() {
     const hashedPassword = CryptoJS.SHA256(password).toString();
 
     const endpoint = mode === 'signup'
-      ? 'http://localhost:5000/api/users/signup'
-      : 'http://localhost:5000/api/users/login';
+      ? '/api/users/signup'
+      : '/api/users/login';
 
     try {
       const response = await fetch(endpoint, {
@@ -103,7 +103,10 @@ function App() {
   // Socket setup: join my code room and append incoming messages
   useEffect(() => {
     if (!user || !user.code) return;
-    const socket = io('http://localhost:5000');
+    const socket = io('/', {
+      path: '/socket.io',
+      transports: ['websocket', 'polling']
+    });
     socketRef.current = socket;
     socket.emit('join', user.code);
     const onMessage = (msg) => {
@@ -127,7 +130,7 @@ function App() {
   const refreshThread = async (peerCode) => {
     if (!peerCode || !token) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/messages/thread?a=${user.code}&b=${peerCode}`, {
+      const res = await fetch(`/api/messages/thread?a=${user.code}&b=${peerCode}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.status === 401) {
@@ -149,7 +152,7 @@ function App() {
   const refreshConversations = async () => {
     if (!token) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/messages/conversations?code=${user.code}`, {
+      const res = await fetch(`/api/messages/conversations?code=${user.code}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.status === 401) {
@@ -170,7 +173,7 @@ function App() {
   const refreshContacts = async () => {
     if (!token) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/contacts?ownerCode=${user.code}`, {
+      const res = await fetch(`/api/contacts?ownerCode=${user.code}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.status === 401) {
@@ -200,7 +203,7 @@ function App() {
     }
     
     try {
-      const res = await fetch('http://localhost:5000/api/contacts', {
+      const res = await fetch('/api/contacts', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -234,7 +237,7 @@ function App() {
     }
     
     try {
-      const res = await fetch('http://localhost:5000/api/contacts', {
+      const res = await fetch('/api/contacts', {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
@@ -257,9 +260,45 @@ function App() {
     }
   };
 
-  // Remove a non-contact conversation from local state
-  const removeConversationLocal = (peerCode) => {
-    setConversations(prev => prev.filter(c => c.peerCode !== peerCode));
+  // Delete entire conversation thread (all messages)
+  const deleteConversation = async (peerCode) => {
+    const currentToken = localStorage.getItem('token');
+    if (!currentToken) {
+      setUser(null);
+      setToken(null);
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/messages/thread?a=${user.code}&b=${peerCode}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${currentToken}`
+        }
+      });
+      
+      if (res.status === 401) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return;
+      }
+      
+      if (res.ok) {
+        // Remove from local state
+        setConversations(prev => prev.filter(c => c.peerCode !== peerCode));
+        // Clear thread if we're viewing this conversation
+        if (toCode === peerCode) {
+          setThread([]);
+          setToCode('');
+        }
+        // Refresh conversations to ensure consistency
+        refreshConversations();
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // Send a message to current peer; uses token from localStorage at call time
@@ -275,7 +314,7 @@ function App() {
     }
     
     try {
-      const res = await fetch('http://localhost:5000/api/messages', {
+      const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -359,7 +398,7 @@ function App() {
                     if (contacts.some(k => k.peerCode === c.peerCode)) {
                       deleteContact(c.peerCode);
                     } else {
-                      removeConversationLocal(c.peerCode);
+                      deleteConversation(c.peerCode);
                     }
                   }}
                   aria-label={`Remove ${c.peerCode}`}

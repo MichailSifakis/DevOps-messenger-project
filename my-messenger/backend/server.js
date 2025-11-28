@@ -36,7 +36,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: [
+      'http://localhost:5173',  // Dev
+      'http://localhost',        // Docker
+      'http://localhost:80'      // Docker explicit
+    ],
     methods: ['GET', 'POST']
   }
 });
@@ -45,7 +49,13 @@ setIO(io);
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost',
+    'http://localhost:80'
+  ]
+}));
 app.use(express.json());
 
 // Routes
