@@ -376,7 +376,7 @@ function App() {
                 value={newContactCode}
                 onChange={(e) => setNewContactCode(e.target.value)}
               />
-              <img src="src/assets/plus.png" alt="add" className="add-contact" onClick={addContact} />
+              <img src="/plus.png" alt="add" className="add-contact" onClick={addContact} />
             </div>
           </div>
           <div className="chats-list">
