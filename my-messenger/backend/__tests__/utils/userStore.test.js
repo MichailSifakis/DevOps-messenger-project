@@ -2,9 +2,11 @@ import {
   createUser, 
   findUserByGmail, 
   findUserByCode, 
-  readUsers 
+  readUsers,
+  upsertUser  
 } from '../../utils/userStore.js';
 import { setupTestDB, teardownTestDB, clearTestDB } from '../setup.js';
+import mongoose from 'mongoose'; 
 
 beforeAll(async () => await setupTestDB());
 afterAll(async () => await teardownTestDB());
@@ -79,6 +81,39 @@ describe('User Store', () => {
     it('should return empty array if no users', async () => {
       const users = await readUsers();
       expect(users).toEqual([]);
+    });
+  });
+
+  describe('upsertUser', () => {
+    it('should create new user if not exists', async () => {
+      const newUserData = {
+        id: new mongoose.Types.ObjectId().toString(),
+        gmail: 'newupdate@test.com',
+        passwordHash: 'hash123',
+        code: '999999'
+      };
+      
+      const result = await upsertUser(newUserData);
+      
+      expect(result).toBeDefined();
+      expect(result.gmail).toBe('newupdate@test.com');
+      expect(result.code).toBe('999999');
+    });
+
+    it('should update existing user', async () => {
+      const created = await createUser({ 
+        gmail: 'toupdate@test.com', 
+        passwordHash: 'oldhash' 
+      });
+      
+      const updated = await upsertUser({
+        id: created.id,
+        gmail: 'toupdate@test.com',
+        passwordHash: 'newhash',
+        code: created.code
+      });
+      
+      expect(updated.passwordHash).toBe('newhash');
     });
   });
 });

@@ -56,12 +56,15 @@ describe('Message Store', () => {
 
   describe('readMessages', () => {
     it('should return all messages', async () => {
-      await appendMessage({ fromCode: 'A', toCode: 'B', text: 'Msg1', timestamp: 1000 });
-      await appendMessage({ fromCode: 'C', toCode: 'D', text: 'Msg2', timestamp: 2000 });
+      await appendMessage({ fromCode: '111', toCode: '222', text: 'Msg1', timestamp: 1000 });
+      await appendMessage({ fromCode: '333', toCode: '444', text: 'Msg2', timestamp: 2000 });
       
       const messages = await readMessages();
       
       expect(messages).toHaveLength(2);
+      expect(messages[0].fromCode).toBeDefined();
+      expect(messages[0].toCode).toBeDefined();
+      expect(messages[0].text).toBeDefined();
     });
 
     it('should return empty array when no messages', async () => {
@@ -80,6 +83,19 @@ describe('Message Store', () => {
         expect(error).toBeDefined();
         expect(error.message).toContain('validation failed');
       }
+    });
+  });
+
+  describe('Error handling', () => {
+    it('should handle getThreadBetweenCodes with invalid codes gracefully', async () => {
+      const thread = await getThreadBetweenCodes(null, null);
+      expect(thread).toEqual([]);
+    });
+
+    it('should handle appendMessage with missing fields', async () => {
+      await expect(
+        appendMessage({ fromCode: '111' })
+      ).rejects.toThrow();
     });
   });
 });

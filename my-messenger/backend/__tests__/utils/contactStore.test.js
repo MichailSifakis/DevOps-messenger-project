@@ -2,7 +2,7 @@ import {
   addContact, 
   listContacts, 
   removeContact,
-  readContacts  // ADD THIS
+  readContacts  
 } from '../../utils/contactStore.js';
 import { setupTestDB, teardownTestDB, clearTestDB } from '../setup.js';
 

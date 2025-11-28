@@ -98,31 +98,58 @@ describe('GET /api/messages/thread', () => {
 
 describe('GET /api/messages/conversations', () => {
   beforeEach(async () => {
+    // Create messages between users
     await request(app)
       .post('/api/messages')
       .set('Authorization', `Bearer ${token1}`)
-      .send({ fromCode: user1Code, toCode: user2Code, text: 'First message' });
+      .send({ fromCode: user1Code, toCode: user2Code, text: 'Hello' });
+    
+    await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
     
     await request(app)
       .post('/api/messages')
       .set('Authorization', `Bearer ${token2}`)
-      .send({ fromCode: user2Code, toCode: user1Code, text: 'Reply' });
+      .send({ fromCode: user2Code, toCode: user1Code, text: 'Hi back' });
   });
 
-  it('should get list of conversations for user', async () => {
+  it('should get conversations for user', async () => {
     const res = await request(app)
       .get(`/api/messages/conversations?code=${user1Code}`)
       .set('Authorization', `Bearer ${token1}`);
     
     expect(res.status).toBe(200);
-    expect(res.body.length).toBeGreaterThanOrEqual(1);
+    expect(res.body).toBeInstanceOf(Array);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0]).toHaveProperty('peerCode');
+    expect(res.body[0]).toHaveProperty('lastText');
+    expect(res.body[0]).toHaveProperty('lastTimestamp');
   });
 
-  it('should reject without token', async () => {
-    const res = await request(app)
-      .get(`/api/messages/conversations?code=${user1Code}`);
+  it('should return empty array for user with no conversations', async () => {
+    const res3 = await request(app)
+      .post('/api/users/signup')
+      .send({ gmail: 'user3@test.com', password: 'hash3' });
     
-    expect(res.status).toBe(401);
+    const res = await request(app)
+      .get(`/api/messages/conversations?code=${res3.body.code}`)
+      .set('Authorization', `Bearer ${res3.body.token}`);
+    
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it('should sort conversations by most recent', async () => {
+    const res = await request(app)
+      .get(`/api/messages/conversations?code=${user1Code}`)
+      .set('Authorization', `Bearer ${token1}`);
+    
+    expect(res.status).toBe(200);
+    // Most recent should be first
+    if (res.body.length > 1) {
+      expect(res.body[0].lastTimestamp).toBeGreaterThanOrEqual(
+        res.body[1].lastTimestamp
+      );
+    }
   });
 
   it('should reject without code parameter', async () => {
@@ -131,5 +158,12 @@ describe('GET /api/messages/conversations', () => {
       .set('Authorization', `Bearer ${token1}`);
     
     expect(res.status).toBe(400);
+  });
+
+  it('should reject without token', async () => {
+    const res = await request(app)
+      .get(`/api/messages/conversations?code=${user1Code}`);
+    
+    expect(res.status).toBe(401);
   });
 });

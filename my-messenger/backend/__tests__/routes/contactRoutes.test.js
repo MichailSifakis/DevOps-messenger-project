@@ -81,3 +81,49 @@ describe('DELETE /api/contacts', () => {
     expect(res.body.removed).toBe(true);
   });
 });
+
+describe('Error Handling', () => {
+  it('POST should reject without ownerCode', async () => {
+    const res = await request(app)
+      .post('/api/contacts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ peerCode: '999999' });
+    
+    expect(res.status).toBe(400);
+  });
+
+  it('POST should reject without peerCode', async () => {
+    const res = await request(app)
+      .post('/api/contacts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ ownerCode: userCode });
+    
+    expect(res.status).toBe(400);
+  });
+
+  it('GET should reject without ownerCode', async () => {
+    const res = await request(app)
+      .get('/api/contacts')
+      .set('Authorization', `Bearer ${token}`);
+    
+    expect(res.status).toBe(400);
+  });
+
+  it('DELETE should reject without ownerCode', async () => {
+    const res = await request(app)
+      .delete('/api/contacts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ peerCode: '999999' });
+    
+    expect(res.status).toBe(400);
+  });
+
+  it('DELETE should reject without peerCode', async () => {
+    const res = await request(app)
+      .delete('/api/contacts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ ownerCode: userCode });
+    
+    expect(res.status).toBe(400);
+  });
+});
