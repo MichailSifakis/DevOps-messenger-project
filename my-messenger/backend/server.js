@@ -11,7 +11,7 @@ import errorHandler from './middleware/errorMiddleware.js';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { setIO } from './socket.js';
-import { metricsMiddleware, getMetrics } from './middleware/metrics.js';
+import { metricsMiddleware, getPrometheusMetrics } from './middleware/metrics.js';
 
 dotenv.config();
 
@@ -90,7 +90,7 @@ app.get('/health', async (req, res) => {
 
 app.get('/metrics', (req, res) => {
   res.set('Content-Type', 'text/plain');  // ← Prometheus expects plain text
-  res.send(getMetrics());
+  res.send(getPrometheusMetrics());
 });
 
 // Error handling middleware
