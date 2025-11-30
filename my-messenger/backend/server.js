@@ -21,9 +21,6 @@ const __dirname = path.dirname(__filename);
 // Connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/messenger';
 
-console.log('Attempting to connect to MongoDB...');
-console.log('MONGO_URI:', MONGO_URI);
-
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected successfully');
@@ -106,7 +103,6 @@ app.use(errorHandler);
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log('✅ New client connected:', socket.id);
 
   socket.on('register', (code) => {
     socket.join(code);

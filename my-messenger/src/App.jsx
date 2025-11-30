@@ -118,7 +118,6 @@ function App() {
     socketRef.current = socket;
     
     socket.on('connect', () => {
-      console.log('✅ Socket connected:', socket.id);
       socket.emit('register', user.code);  // Changed from 'join' to 'register'
     });
     
@@ -126,12 +125,7 @@ function App() {
       console.error('❌ Socket connection error:', error);
     });
     
-    socket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason);
-    });
-    
     const onMessage = (msg) => {
-      console.log('📩 Received message:', msg);
       
       // Add message to thread if it's part of current conversation
       if ((msg.fromCode === toCode && msg.toCode === user.code) || 
@@ -155,7 +149,6 @@ function App() {
     refreshConversations();
     
     return () => {
-      console.log('🔌 Cleaning up socket');
       socket.off('message', onMessage);
       socket.disconnect();
       socketRef.current = null;
@@ -169,7 +162,6 @@ function App() {
     const pollInterval = setInterval(() => {
       // Only poll if socket isn't connected
       if (!socketRef.current?.connected) {
-        console.log('🔄 Polling for new messages (socket disconnected)');
         refreshThread(toCode);
       }
     }, 5000); // Poll every 5 seconds
@@ -383,12 +375,10 @@ function App() {
       const msg = await res.json();
       if (res.ok) {
         setDraft('');
-        setThread(prev => [...prev, msg]);
-        // bump conversation to top
         refreshConversations();
       }
     } catch (e) {
-      console.error(e);
+      // Silent error handling
     }
   };
 
