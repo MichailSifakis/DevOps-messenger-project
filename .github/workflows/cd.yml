@@ -1,37 +1,88 @@
-name: CD Pipeline
+name: CI Pipeline
 
 on:
   push:
+    branches: [ main, develop ]
+  pull_request:
     branches: [ main ]
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          node-version: '18'
       
-      - name: Build and push backend image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/messenger-backend:latest ./backend
-          docker push ${{ secrets.DOCKER_USERNAME }}/messenger-backend:latest
-          echo "✅ Backend image pushed successfully"
+      - name: Install backend dependencies
+        working-directory: ./my-messenger/backend
+        run: npm ci
       
-      - name: Build and push frontend image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/messenger-frontend:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/messenger-frontend:latest
-          echo "✅ Frontend image pushed successfully"
+      - name: Run tests with coverage
+        working-directory: ./my-messenger/backend
+        run: npm test -- --coverage
       
-      - name: Deployment complete
+      - name: Check coverage threshold
+        working-directory: ./my-messenger/backend
         run: |
-          echo "🎉 Deployment complete!"
-          echo "Backend: ${{ secrets.DOCKER_USERNAME }}/messenger-backend:latest"
-          echo "Frontend: ${{ secrets.DOCKER_USERNAME }}/messenger-frontend:latest"
+          if [ ! -f "coverage/coverage-summary.json" ]; then
+            echo "❌ Coverage file not found!"
+            exit 1
+          fi
+          
+          node -e "
+            const coverage = require('./coverage/coverage-summary.json');
+            const lineCoverage = coverage.total.lines.pct;
+            const threshold = 70;
+            
+            console.log('Line Coverage: ' + lineCoverage + '%');
+            console.log('Branch Coverage: ' + coverage.total.branches.pct + '%');
+            console.log('Function Coverage: ' + coverage.total.functions.pct + '%');
+            console.log('Statement Coverage: ' + coverage.total.statements.pct + '%');
+            console.log('');
+            console.log('Threshold: ' + threshold + '%');
+            
+            if (lineCoverage < threshold) {
+              console.log('❌ Coverage ' + lineCoverage + '% is below ' + threshold + '%');
+              process.exit(1);
+            }
+            
+            console.log('✅ Coverage ' + lineCoverage + '% meets requirement!');
+          "
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: my-messenger/backend/coverage/
+          retention-days: 30
+  
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Build Docker images
+        working-directory: ./my-messenger
+        run: docker-compose build
+      
+      - name: Verify containers start
+        working-directory: ./my-messenger
+        run: |
+          docker-compose up -d
+          echo "Waiting for services to start..."
+          sleep 15
+          echo "Checking container status..."
+          docker-compose ps
+          echo "Testing health endpoint..."
+          curl -f http://localhost:5000/health || exit 1
+          echo "✅ Containers started successfully"
+          docker-compose down
