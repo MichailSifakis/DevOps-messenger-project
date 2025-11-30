@@ -20,30 +20,46 @@ jobs:
           node-version: '18'
       
       - name: Install backend dependencies
-        working-directory: ./my-messenger/backend  # ← Added my-messenger/
+        working-directory: ./my-messenger/backend
         run: npm ci
       
       - name: Run tests with coverage
-        working-directory: ./my-messenger/backend  # ← Added my-messenger/
+        working-directory: ./my-messenger/backend
         run: npm test -- --coverage
       
       - name: Check coverage threshold
-        working-directory: ./my-messenger/backend  # ← Added my-messenger/
+        working-directory: ./my-messenger/backend
         run: |
-          COVERAGE=$(node -pe "require('./coverage/coverage-summary.json').total.lines.pct")
-          echo "Coverage: $COVERAGE%"
-          
-          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
-            echo "❌ Coverage $COVERAGE% is below 70%"
+          if [ ! -f "coverage/coverage-summary.json" ]; then
+            echo "❌ Coverage file not found!"
             exit 1
           fi
-          echo "✅ Coverage $COVERAGE% meets requirement"
+          
+          node -e "
+            const coverage = require('./coverage/coverage-summary.json');
+            const lineCoverage = coverage.total.lines.pct;
+            const threshold = 70;
+            
+            console.log('Line Coverage: ' + lineCoverage + '%');
+            console.log('Branch Coverage: ' + coverage.total.branches.pct + '%');
+            console.log('Function Coverage: ' + coverage.total.functions.pct + '%');
+            console.log('Statement Coverage: ' + coverage.total.statements.pct + '%');
+            console.log('');
+            console.log('Threshold: ' + threshold + '%');
+            
+            if (lineCoverage < threshold) {
+              console.log('❌ Coverage ' + lineCoverage + '% is below ' + threshold + '%');
+              process.exit(1);
+            }
+            
+            console.log('✅ Coverage ' + lineCoverage + '% meets requirement!');
+          "
       
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: my-messenger/backend/coverage/  # ← Added my-messenger/
+          path: my-messenger/backend/coverage/
           retention-days: 30
   
   build:
@@ -55,11 +71,11 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Build Docker images
-        working-directory: ./my-messenger  # ← Added my-messenger/
+        working-directory: ./my-messenger
         run: docker-compose build
       
       - name: Verify containers start
-        working-directory: ./my-messenger  # ← Added my-messenger/
+        working-directory: ./my-messenger
         run: |
           docker-compose up -d
           echo "Waiting for services to start..."
