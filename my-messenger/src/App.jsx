@@ -103,7 +103,7 @@ function App() {
   // Socket setup: join my code room and append incoming messages
   useEffect(() => {
     if (!user || !user.code) return;
-    const socket = io('/', {
+    const socket = io('http://messenger-backend-ms-17326.northeurope.azurecontainer.io:5000', {
       path: '/socket.io',
       transports: ['websocket', 'polling']
     });
