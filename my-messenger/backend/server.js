@@ -89,7 +89,8 @@ app.get('/health', async (req, res) => {
 });
 
 app.get('/metrics', (req, res) => {
-  res.json(getMetrics());
+  res.set('Content-Type', 'text/plain');  // ← Prometheus expects plain text
+  res.send(getMetrics());
 });
 
 // Error handling middleware
