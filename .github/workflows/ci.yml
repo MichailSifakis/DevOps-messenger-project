@@ -20,21 +20,19 @@ jobs:
           node-version: '18'
       
       - name: Install backend dependencies
-        working-directory: ./backend
+        working-directory: ./my-messenger/backend  # ← Added my-messenger/
         run: npm ci
       
       - name: Run tests with coverage
-        working-directory: ./backend
+        working-directory: ./my-messenger/backend  # ← Added my-messenger/
         run: npm test -- --coverage
       
       - name: Check coverage threshold
-        working-directory: ./backend
+        working-directory: ./my-messenger/backend  # ← Added my-messenger/
         run: |
-          # Extract coverage percentage
           COVERAGE=$(node -pe "require('./coverage/coverage-summary.json').total.lines.pct")
           echo "Coverage: $COVERAGE%"
           
-          # Check if coverage is below 70%
           if (( $(echo "$COVERAGE < 70" | bc -l) )); then
             echo "❌ Coverage $COVERAGE% is below 70%"
             exit 1
@@ -45,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: backend/coverage/
+          path: my-messenger/backend/coverage/  # ← Added my-messenger/
           retention-days: 30
   
   build:
@@ -57,9 +55,11 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Build Docker images
+        working-directory: ./my-messenger  # ← Added my-messenger/
         run: docker-compose build
       
       - name: Verify containers start
+        working-directory: ./my-messenger  # ← Added my-messenger/
         run: |
           docker-compose up -d
           echo "Waiting for services to start..."
