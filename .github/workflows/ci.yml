@@ -1,0 +1,72 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Run tests with coverage
+        working-directory: ./backend
+        run: npm test -- --coverage
+      
+      - name: Check coverage threshold
+        working-directory: ./backend
+        run: |
+          # Extract coverage percentage
+          COVERAGE=$(node -pe "require('./coverage/coverage-summary.json').total.lines.pct")
+          echo "Coverage: $COVERAGE%"
+          
+          # Check if coverage is below 70%
+          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+            echo "❌ Coverage $COVERAGE% is below 70%"
+            exit 1
+          fi
+          echo "✅ Coverage $COVERAGE% meets requirement"
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: backend/coverage/
+          retention-days: 30
+  
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Build Docker images
+        run: docker-compose build
+      
+      - name: Verify containers start
+        run: |
+          docker-compose up -d
+          echo "Waiting for services to start..."
+          sleep 15
+          echo "Checking container status..."
+          docker-compose ps
+          echo "Testing health endpoint..."
+          curl -f http://localhost:5000/health || exit 1
+          echo "✅ Containers started successfully"
+          docker-compose down
