@@ -60,10 +60,12 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost',
     'http://localhost:80',
-    'http://messenger-app-ms-17326.northeurope.azurecontainer.io',  // ADD THIS
-    'https://messenger-app-ms-17326.northeurope.azurecontainer.io'  // ADD THIS - if using HTTPS
+    'http://messenger-app-ms-17326.northeurope.azurecontainer.io',
+    'https://messenger-app-ms-17326.northeurope.azurecontainer.io'
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Upgrade', 'Connection']
 }));
 app.use(express.json());
 
@@ -104,15 +106,22 @@ app.use(errorHandler);
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
+  console.log('✅ New client connected:', socket.id);
 
   socket.on('register', (code) => {
     socket.join(code);
-    console.log(`User ${code} registered with socket ${socket.id}`);
+    console.log(`👤 User ${code} registered with socket ${socket.id}`);
+    
+    // Confirm registration
+    socket.emit('registered', { code, socketId: socket.id });
   });
-
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+  
+  socket.on('disconnect', (reason) => {
+    console.log(`❌ Client disconnected: ${socket.id}, reason: ${reason}`);
+  });
+  
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
   });
 });
 

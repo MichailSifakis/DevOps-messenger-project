@@ -19,9 +19,16 @@ router.post('/', protect, async (req, res) => {
     const message = { fromCode, toCode, text, timestamp };
     const savedMessage = await appendMessage(message);
     
+    // Emit to recipient via Socket.IO
     const io = getIO();
     if (io) {
+      console.log(`📤 Emitting message to room ${toCode}:`, savedMessage);
       io.to(toCode).emit('message', savedMessage);
+      
+      // Also emit to sender (for multi-device sync)
+      io.to(fromCode).emit('message', savedMessage);
+    } else {
+      console.warn('⚠️  Socket.IO not available');
     }
     
     res.status(201).json(savedMessage);

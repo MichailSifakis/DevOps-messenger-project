@@ -103,31 +103,79 @@ function App() {
   // Socket setup: join my code room and append incoming messages
   useEffect(() => {
     if (!user || !user.code) return;
-    const socket = io('http://messenger-backend-ms-17326.northeurope.azurecontainer.io:5000', {
+    
+    const SOCKET_URL = 'http://messenger-backend-ms-17326.northeurope.azurecontainer.io:5000';
+    
+    const socket = io(SOCKET_URL, {
       path: '/socket.io',
-      transports: ['polling', 'websocket'],  // Try polling first
+      transports: ['polling'],  // Force polling (more reliable with Azure)
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 5
+      reconnectionAttempts: 10,
+      timeout: 20000
     });
+    
     socketRef.current = socket;
-    socket.emit('join', user.code);
+    
+    socket.on('connect', () => {
+      console.log('✅ Socket connected:', socket.id);
+      socket.emit('register', user.code);  // Changed from 'join' to 'register'
+    });
+    
+    socket.on('connect_error', (error) => {
+      console.error('❌ Socket connection error:', error);
+    });
+    
+    socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
+    });
+    
     const onMessage = (msg) => {
-      if ((msg.fromCode === toCode && msg.toCode === user.code) || (msg.fromCode === user.code && msg.toCode === toCode)) {
-        setThread(prev => [...prev, msg]);
+      console.log('📩 Received message:', msg);
+      
+      // Add message to thread if it's part of current conversation
+      if ((msg.fromCode === toCode && msg.toCode === user.code) || 
+          (msg.fromCode === user.code && msg.toCode === toCode)) {
+        setThread(prev => {
+          // Avoid duplicates
+          if (prev.some(m => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
       }
+      
+      // Refresh conversations sidebar
       if (msg.fromCode === user.code || msg.toCode === user.code) {
         refreshConversations();
       }
     };
+    
     socket.on('message', onMessage);
+    
+    // Initial load
     refreshConversations();
+    
     return () => {
+      console.log('🔌 Cleaning up socket');
       socket.off('message', onMessage);
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [user && user.code, toCode]);
+  }, [user?.code, toCode, token]); // Added dependencies
+
+  // Fallback: Poll for new messages every 5 seconds if socket fails
+  useEffect(() => {
+    if (!user || !toCode || !token) return;
+    
+    const pollInterval = setInterval(() => {
+      // Only poll if socket isn't connected
+      if (!socketRef.current?.connected) {
+        console.log('🔄 Polling for new messages (socket disconnected)');
+        refreshThread(toCode);
+      }
+    }, 5000); // Poll every 5 seconds
+    
+    return () => clearInterval(pollInterval);
+  }, [user, toCode, token]);
 
   // Load full message thread with selected peer
   const refreshThread = async (peerCode) => {
