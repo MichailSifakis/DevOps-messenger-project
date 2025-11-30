@@ -26,6 +26,12 @@ function App() {
   const [contacts, setContacts] = useState([]); // saved peers by code
   const [newContactCode, setNewContactCode] = useState('');
 
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // On load, restore user + token from localStorage (no server call)
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -168,6 +174,10 @@ function App() {
     
     return () => clearInterval(pollInterval);
   }, [user, toCode, token]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [thread]);
 
   // Load full message thread with selected peer
   const refreshThread = async (peerCode) => {
@@ -473,6 +483,7 @@ function App() {
                 <div className="bubble">{m.text}</div>
               </div>
             ))}
+            <div ref={messagesEndRef} /> {}
           </div>
           <form className="chat-input" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
             <input className="input" placeholder="Type a message" value={draft} onChange={(e) => setDraft(e.target.value)} />

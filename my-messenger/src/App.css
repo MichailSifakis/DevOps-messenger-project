@@ -97,6 +97,7 @@ body {
   width: 100vw;
   height: 100vh;
   background: #0b141a;
+  overflow: hidden;
 }
 
 .chat-sidebar {
@@ -105,6 +106,7 @@ body {
   display: flex;
   flex-direction: column;
   border-right: 1px solid #2a2f32;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -152,6 +154,8 @@ body {
 
 .chats-list {
   padding: 8px 0;
+  overflow: auto;
+  flex: 1;
 }
 
 .chat-item {
@@ -160,6 +164,7 @@ body {
   padding: 10px 16px;
   cursor: pointer;
   align-items: center;
+  min-width: 0;
 }
 
 .chat-item:hover {
@@ -185,6 +190,8 @@ body {
 .chat-info {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .delete-contact {
@@ -208,11 +215,17 @@ body {
 
 .chat-title {
   font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-subtitle {
   font-size: 12px;
   color: #8696a0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-main {
@@ -220,6 +233,7 @@ body {
   color: #e9edef;
   display: grid;
   grid-template-rows: 60px 1fr 64px;
+  overflow: hidden;
 }
 
 .chat-header {
@@ -259,11 +273,14 @@ body {
 .chat-messages {
   padding: 16px;
   overflow-y: auto;
+  overflow-x: hidden;
+  word-wrap: break-word;
 }
 
 .message {
   display: flex;
   margin-bottom: 8px;
+  max-width: 100%;
 }
 
 .message.inbound {
@@ -278,6 +295,9 @@ body {
   max-width: 60%;
   padding: 8px 10px;
   border-radius: 8px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .message.inbound .bubble {
@@ -294,6 +314,7 @@ body {
   gap: 8px;
   padding: 8px 12px;
   border-top: 1px solid #2a2f32;
+  overflow: hidden;
 }
 
 .chat-input .input {
@@ -302,6 +323,8 @@ body {
   color: #e9edef;
   padding: 12px;
   border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .chat-input .send {
