@@ -38,11 +38,14 @@ const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
     origin: [
-      'http://localhost:5173',  // Dev
-      'http://localhost',        // Docker
-      'http://localhost:80'      // Docker explicit
+      'http://localhost:5173',  // Vite dev server
+      'http://localhost',        // Docker frontend
+      'http://localhost:80',     // Docker frontend explicit port
+      'http://messenger-app-ms-17326.northeurope.azurecontainer.io',  // ADD THIS - Azure frontend
+      'https://messenger-app-ms-17326.northeurope.azurecontainer.io'  // ADD THIS - if using HTTPS
     ],
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 setIO(io);
@@ -56,8 +59,11 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost',
-    'http://localhost:80'
-  ]
+    'http://localhost:80',
+    'http://messenger-app-ms-17326.northeurope.azurecontainer.io',  // ADD THIS
+    'https://messenger-app-ms-17326.northeurope.azurecontainer.io'  // ADD THIS - if using HTTPS
+  ],
+  credentials: true
 }));
 app.use(express.json());
 

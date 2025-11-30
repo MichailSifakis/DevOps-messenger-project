@@ -105,7 +105,10 @@ function App() {
     if (!user || !user.code) return;
     const socket = io('http://messenger-backend-ms-17326.northeurope.azurecontainer.io:5000', {
       path: '/socket.io',
-      transports: ['websocket', 'polling']
+      transports: ['polling', 'websocket'],  // Try polling first
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5
     });
     socketRef.current = socket;
     socket.emit('join', user.code);
